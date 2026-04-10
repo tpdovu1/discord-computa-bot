@@ -184,8 +184,9 @@ Output just the command, nothing else. Start with "Computa,":"""
 
     response = client.messages.create(
         model=ANTHROPIC_MODEL,
-        max_tokens=40,
-        messages=[{"role": "user", "content": prompt}]
+        max_tokens=100,
+        messages=[{"role": "user", "content": prompt}],
+        extra_headers={"anthropic-version": "2023-06-01"}
     )
 
     print(f"[LLM Raw Response] {response.content}")  # Debug
