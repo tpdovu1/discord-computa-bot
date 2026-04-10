@@ -172,6 +172,7 @@ async def generate_computa_message(user_name: str):
     response = client.messages.create(
         model=ANTHROPIC_MODEL,
         max_tokens=50,
+        temperature=1.0,
         system="You are a fun creative bot that generates short Computa commands. Always output just the command, nothing else. Example: Computa, give Bob testicular torsion",
         messages=[{"role": "user", "content": [{"type": "text", "text": f"New Computa command for {user_name}. Mix chaotic, weird, wholesome. Start with Computa,. Just output:"}]}]
     )
