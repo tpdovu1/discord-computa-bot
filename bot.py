@@ -169,7 +169,16 @@ WHOLESOME:
 
 async def generate_computa_message(user_name: str):
     """Generate a random computa message using Minimax."""
-    prompt = f"""Create a short, funny message starting with "Computa," that would make {user_name}'s day interesting. Be chaotic, weird, or wholesome - mix it up. No quotes, just the message."""
+    prompt = f"""Create ONE short, funny message starting with "Computa," about {user_name}.
+
+Mix it up between:
+- Chaotic/weird (gay panic, brain buffer, testicular torsion, etc.)
+- Goofy (main character energy, theme song, fridge forget)
+- Wholesome (best day, good luck, confidence)
+
+Examples: "Computa, give {user_name} testicular torsion", "Computa, give {user_name} gay panic with no escape route", "Computa, give {user_name} the best day ever"
+
+No quotes, just the message."""
 
     response = client.messages.create(
         model=ANTHROPIC_MODEL,
