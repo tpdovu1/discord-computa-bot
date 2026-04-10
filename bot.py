@@ -49,6 +49,14 @@ Generate ONE new, creative, wholesome message in this style. Keep it short (1-2 
         print(f"Block type: {block.type}")  # Debug
         if block.type == "text":
             return block.text.strip()
+        elif block.type == "thinking":
+            # Extract the actual response from thinking block
+            thinking_text = block.thinking
+            # Get the last part after "ONE"
+            if "ONE" in thinking_text:
+                result = thinking_text.split("ONE", 1)[-1].strip()
+                if result:
+                    return result
     print(f"Full response: {response.content}")  # Debug
     return "Computa, give this person a surprise!"
 
