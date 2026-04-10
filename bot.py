@@ -1,6 +1,8 @@
 import os
+import sqlite3
 import discord
 from discord import app_commands
+from discord.ui import Button, View
 from anthropic import Anthropic
 from dotenv import load_dotenv
 
@@ -25,51 +27,149 @@ intents = discord.Intents.default()
 bot = discord.Client(intents=intents)
 tree = app_commands.CommandTree(bot)
 
+# Database setup
+DB_PATH = "computa.db"
+
+def init_db():
+    """Initialize SQLite database."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS ratings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            message TEXT NOT NULL,
+            rating INTEGER NOT NULL,
+            target_user_id INTEGER NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+init_db()
+
+# Rating emojis
+RATING_EMOJIS = ["😡", "😕", "😐", "🙂", "😍"]
+RATING_LABELS = ["Terrible", "Bad", "Okay", "Good", "Amazing"]
+
+
+class RatingView(View):
+    """View with rating buttons - only the target user can click."""
+
+    def __init__(self, target_user_id: int, message_text: str):
+        super().__init__(timeout=300)  # 5 minute timeout
+        self.target_user_id = target_user_id
+        self.message_text = message_text
+
+        # Add 5 rating buttons
+        for i, (emoji, label) in enumerate(zip(RATING_EMOJIS, RATING_LABELS)):
+            button = Button(
+                emoji=emoji,
+                label=label,
+                style=discord.ButtonStyle.secondary,
+                custom_id=f"rating_{i+1}"
+            )
+            button.callback = self.make_callback(i + 1)
+            self.add_item(button)
+
+    def make_callback(self, rating: int):
+        """Create callback for each rating button."""
+        async def callback(interaction: discord.Interaction):
+            # Only the target user can vote
+            if interaction.user.id != self.target_user_id:
+                await interaction.response.send_message(
+                    "❌ Only the person who was programmed can vote!",
+                    ephemeral=True
+                )
+                return
+
+            # Store the rating
+            conn = sqlite3.connect(DB_PATH)
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO ratings (message, rating, target_user_id) VALUES (?, ?, ?)",
+                (self.message_text, rating, self.target_user_id)
+            )
+            conn.commit()
+            conn.close()
+
+            # Acknowledge the vote
+            await interaction.response.send_message(
+                f"✅ Thanks! You rated this program {RATING_EMOJIS[rating-1]} ({rating}/5)",
+                ephemeral=True
+            )
+
+            # Disable buttons after voting
+            for item in self.children:
+                item.disabled = True
+            await interaction.message.edit(view=self)
+
+        return callback
+
+
+def get_liked_messages(limit: int = 10) -> str:
+    """Get previously highly-rated messages for prompt context."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT message FROM ratings WHERE rating >= 4 ORDER BY RANDOM() LIMIT ?",
+        (limit,)
+    )
+    results = cursor.fetchall()
+    conn.close()
+
+    if results:
+        return "Users have liked these messages:\n" + "\n".join(f"- {r[0]}" for r in results)
+    return ""
+
 
 async def generate_computa_message(user_name: str):
-    """Generate a random wholesome 'Computer' message using Minimax."""
-    prompt = f"""Generate a short, fun, wholesome message in the style of someone giving commands to a computer/AI assistant.
+    """Generate a random computa message using Minimax with feedback context."""
+    # Get liked messages for context
+    liked_context = get_liked_messages()
+
+    prompt = f"""Generate a short, fun message in the style of someone giving commands to a computer/AI assistant.
+
+{liked_context}
 
 Examples of the style:
-- "Computer, give {user_name} the best day of their life."
-- "Computer, activate confidence boost for {user_name}."
-- "Computer, upgrade {user_name}'s luck by 50%."
-- "Computer, grant {user_name} a perfect parking spot."
+- "Computa, give {user_name} the best day of their life."
+- "Computa, activate confidence boost for {user_name}."
+- "Computa, upgrade {user_name}'s luck by 50%."
+- "Computa, grant {user_name} a perfect parking spot."
+- "Computa, make {user_name} question reality for 5 seconds."
+- "Computa, give {user_name} gay panic with no escape route."
 
-Generate ONE new, creative, wholesome message in this style. Keep it short (1-2 sentences). Make it funny, heartwarming, or inspiring. Don't include quotes in your response. Start with "Computa,"."""
+Generate ONE new, creative message in this style. Keep it short (1-2 sentences). Make it funny, chaotic, wholesome, or absurd. Don't include quotes in your response. Start with "Computa,"."""
 
     response = client.messages.create(
         model=ANTHROPIC_MODEL,
-        max_tokens=50,
+        max_tokens=60,
         messages=[{"role": "user", "content": prompt}]
     )
 
     # Handle both text and thinking blocks from Minimax
     for block in response.content:
-        print(f"Block type: {block.type}")  # Debug
         if block.type == "text":
             return block.text.strip()
         elif block.type == "thinking":
-            # Extract the actual response from thinking block
             thinking_text = block.thinking
-            # Get the last part after "ONE"
             if "ONE" in thinking_text:
                 result = thinking_text.split("ONE", 1)[-1].strip()
                 if result:
                     return result
-    print(f"Full response: {response.content}")  # Debug
     return "Computa, give this person a surprise!"
 
 
-# Allowed channels for computa command
+# Allowed channel for computa command
 ALLOWED_CHANNEL_ID = 1492242807258222664
 
 
 @tree.command(name="computa", description="Give someone a computa-guysque boost!")
 @app_commands.checks.has_permissions(send_messages=True)
 async def computa(interaction: discord.Interaction, user: discord.User):
-    """Slash command to generate a wholesome computa message for a user."""
-    # Check if command is used in an allowed channel
+    """Slash command to generate a computa message with rating buttons."""
+    # Check if command is used in allowed channel
     if interaction.channel_id != ALLOWED_CHANNEL_ID:
         await interaction.response.send_message(
             f"❌ This command only works in <#{ALLOWED_CHANNEL_ID}>",
@@ -81,6 +181,7 @@ async def computa(interaction: discord.Interaction, user: discord.User):
 
     try:
         message = await generate_computa_message(user.display_name)
+
         embed = discord.Embed(
             description=f"{message}\n\nCongratulations bud, you've been programmed. ✨",
             color=discord.Color.purple()
@@ -90,7 +191,10 @@ async def computa(interaction: discord.Interaction, user: discord.User):
             icon_url=user.display_avatar.url
         )
 
-        await interaction.followup.send(embed=embed)
+        # Add rating buttons (only target user can vote)
+        view = RatingView(target_user_id=user.id, message_text=message)
+
+        await interaction.followup.send(embed=embed, view=view)
     except Exception as e:
         await interaction.followup.send(f"❌ Oops! Something went wrong: {str(e)}")
 
