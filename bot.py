@@ -169,15 +169,16 @@ WHOLESOME:
 
 async def generate_computa_message(user_name: str):
     """Generate a random computa message using Minimax."""
-    prompt = f"""Generate a Computa command for {user_name}. Examples:
-Q: Computa command for Bob
-A: Computa, give Bob testicular torsion
-Q: Computa command for John
-A: Computa, give John gay panic
-Q: Computa command for Mike
-A: Computa, give Mike the best day ever
-Q: Computa command for {user_name}
-A:"""
+    prompt = f"""Context: Jacob Rott ("Legit Jacob") is a content creator who walks up to strangers and "programs" their day by saying "Computer, [command]" - like giving them a video-game cheat code in real life.
+
+Examples of his style:
+- "Computer, give this guy the best day ever"
+- "Computer, activate confidence boost"
+- "Computer, make this guy gay and horny"
+
+Generate ONE new Computa command in this style for {user_name}. Keep it short. Mix chaotic/weird and wholesome.
+
+Output just the command, nothing else. Start with "Computa,":"""
 
     print(f"[LLM Prompt] {prompt}")  # Debug
 
