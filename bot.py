@@ -169,24 +169,11 @@ WHOLESOME:
 
 async def generate_computa_message(user_name: str):
     """Generate a random computa message using Minimax."""
-    prompt = f"""Context: Jacob Rott ("Legit Jacob") is a content creator who walks up to strangers and "programs" their day by saying "Computer, [command]" - like giving them a video-game cheat code in real life.
-
-Examples of his style:
-- "Computer, give this guy the best day ever"
-- "Computer, activate confidence boost"
-- "Computer, make this guy gay and horny"
-
-Generate ONE new Computa command in this style for {user_name}. Keep it short. Mix chaotic/weird and wholesome.
-
-Output just the command, nothing else. Start with "Computa,":"""
-
-    print(f"[LLM Prompt] {prompt}")  # Debug
-
     response = client.messages.create(
         model=ANTHROPIC_MODEL,
-        max_tokens=100,
-        messages=[{"role": "user", "content": prompt}],
-        extra_headers={"anthropic-version": "2023-06-01"}
+        max_tokens=50,
+        system="You are a fun creative bot that generates short Computa commands. Always output just the command, nothing else. Example: Computa, give Bob testicular torsion",
+        messages=[{"role": "user", "content": f"New Computa command for {user_name}. Mix chaotic, weird, wholesome. Start with Computa,. Just output:"}]
     )
 
     print(f"[LLM Raw Response] {response.content}")  # Debug
