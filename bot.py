@@ -123,24 +123,52 @@ def get_liked_messages(limit: int = 10) -> str:
     return ""
 
 
+# Baseline examples for the LLM - placeholder {user_name} will be replaced
+BASELINE_EXAMPLES = """Examples of the style (mix of chaotic, goofy, and wholesome):
+- "Computa, give USER_NAME the best day of their life."
+- "Computa, activate confidence boost for USER_NAME."
+- "Computa, upgrade USER_NAME's luck by 50%."
+- "Computa, grant USER_NAME a perfect parking spot."
+- "Computa, make USER_NAME question reality for 5 seconds."
+- "Computa, give USER_NAME gay panic with no escape route."
+- "Computa, make USER_NAME forget why he walked into the room."
+- "Computa, give USER_NAME an itch he can't scratch."
+- "Computa, make USER_NAME's brain buffer mid-conversation."
+- "Computa, make USER_NAME trip over nothing."
+- "Computa, give USER_NAME main character energy."
+- "Computa, make USER_NAME feel like the chosen one."
+- "Computa, give USER_NAME peace today."
+- "Computa, make USER_NAME feel appreciated."
+- "Computa, make USER_NAME fall for the worst possible person."
+- "Computa, give USER_NAME zero chill around anyone attractive."
+- "Computa, make USER_NAME open the fridge and forget why."
+- "Computa, make USER_NAME's voice crack at the worst moment."
+- "Computa, give USER_NAME a theme song."
+- "Computa, make USER_NAME think he left the stove on."
+- "Computa, give USER_NAME a walking red flag crush."
+- "Computa, make USER_NAME existential dread for an hour."
+- "Computa, give USER_NAME the confidence of someone who should not have confidence."
+- "Computa, make USER_NAME overshare after one drink."
+- "Computa, give USER_NAME good luck."""
+
+
 async def generate_computa_message(user_name: str):
     """Generate a random computa message using Minimax with feedback context."""
     # Get liked messages for context
     liked_context = get_liked_messages()
 
-    prompt = f"""Generate a short, fun message in the style of someone giving commands to a computer/AI assistant.
+    # Get baseline examples with user name replaced
+    baseline = BASELINE_EXAMPLES.replace("USER_NAME", user_name)
+
+    prompt = f"""Generate a short, fun, chaotic message in the style of someone giving commands to a computer/AI assistant.
+
+The vibe is: 50% unhinged/chaotic, 25% goofy/surreal, 25% wholesome. Be random, funny, and a little cursed.
 
 {liked_context}
 
-Examples of the style:
-- "Computa, give {user_name} the best day of their life."
-- "Computa, activate confidence boost for {user_name}."
-- "Computa, upgrade {user_name}'s luck by 50%."
-- "Computa, grant {user_name} a perfect parking spot."
-- "Computa, make {user_name} question reality for 5 seconds."
-- "Computa, give {user_name} gay panic with no escape route."
+{baseline}
 
-Generate ONE new, creative message in this style. Keep it short (1-2 sentences). Make it funny, chaotic, wholesome, or absurd. Don't include quotes in your response. Start with "Computa,"."""
+Generate ONE new, creative message in this style. Keep it short (1-2 sentences). Make it funny, chaotic, absurd, or wholesome. Don't include quotes in your response. Start with "Computa,"."""
 
     response = client.messages.create(
         model=ANTHROPIC_MODEL,
