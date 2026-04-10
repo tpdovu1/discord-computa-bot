@@ -72,7 +72,7 @@ async def computa(interaction: discord.Interaction, user: discord.User):
     try:
         message = await generate_computa_message()
         embed = discord.Embed(
-            description=f"✨ **{message}** ✨",
+            description=f"Computa, make {user.mention} {message}\n\nCongratulations bud, you've been programmed. ✨",
             color=discord.Color.purple()
         )
         embed.set_author(
