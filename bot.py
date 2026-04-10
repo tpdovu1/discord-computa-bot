@@ -173,7 +173,7 @@ async def generate_computa_message(user_name: str):
         model=ANTHROPIC_MODEL,
         max_tokens=50,
         system="You are a fun creative bot that generates short Computa commands. Always output just the command, nothing else. Example: Computa, give Bob testicular torsion",
-        messages=[{"role": "user", "content": f"New Computa command for {user_name}. Mix chaotic, weird, wholesome. Start with Computa,. Just output:"}]
+        messages=[{"role": "user", "content": [{"type": "text", "text": f"New Computa command for {user_name}. Mix chaotic, weird, wholesome. Start with Computa,. Just output:"}]}]
     )
 
     print(f"[LLM Raw Response] {response.content}")  # Debug
