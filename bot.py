@@ -62,7 +62,7 @@ Generate ONE new, creative, wholesome message in this style. Keep it short (1-2 
 
 
 # Allowed channels for computa command
-ALLOWED_CHANNEL_IDS = [1492242807258222664, 1492245748442464286]
+ALLOWED_CHANNEL_ID = 1492242807258222664
 
 
 @tree.command(name="computa", description="Give someone a computa-guysque boost!")
@@ -70,9 +70,9 @@ ALLOWED_CHANNEL_IDS = [1492242807258222664, 1492245748442464286]
 async def computa(interaction: discord.Interaction, user: discord.User):
     """Slash command to generate a wholesome computa message for a user."""
     # Check if command is used in an allowed channel
-    if interaction.channel_id not in ALLOWED_CHANNEL_IDS:
+    if interaction.channel_id != ALLOWED_CHANNEL_ID:
         await interaction.response.send_message(
-            f"❌ This command only works in <#{ALLOWED_CHANNEL_IDS[0]}> or <#{ALLOWED_CHANNEL_IDS[1]}>",
+            f"❌ This command only works in <#{ALLOWED_CHANNEL_ID}>",
             ephemeral=True
         )
         return
