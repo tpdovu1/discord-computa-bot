@@ -44,7 +44,11 @@ Generate ONE new, creative, wholesome message in this style. Keep it short (1-2 
         messages=[{"role": "user", "content": prompt}]
     )
 
-    return response.content[0].text.strip()
+    # Handle both text and thinking blocks from Minimax
+    for block in response.content:
+        if block.type == "text":
+            return block.text.strip()
+    return "Computer, give this person a surprise!"
 
 
 # Allowed channels for computa command
