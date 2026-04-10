@@ -168,22 +168,8 @@ WHOLESOME:
 
 
 async def generate_computa_message(user_name: str):
-    """Generate a random computa message using Minimax with feedback context."""
-    # Get liked messages for context
-    liked_context = get_liked_messages()
-
-    # Get baseline examples with user name replaced
-    baseline = BASELINE_EXAMPLES.replace("USER_NAME", user_name)
-
-    prompt = f"""Generate a short, fun, chaotic message in the style of someone giving commands to a computer/AI assistant.
-
-The vibe is: 50% unhinged/chaotic, 25% goofy/surreal, 25% wholesome. Be random, funny, and a little cursed.
-
-{liked_context}
-
-{baseline}
-
-Generate ONE new, creative message in this style. Keep it short (1-2 sentences). Make it funny, chaotic, absurd, or wholesome. Don't include quotes in your response. Start with "Computa,"."""
+    """Generate a random computa message using Minimax."""
+    prompt = f"""Create a short, funny message starting with "Computa," that would make {user_name}'s day interesting. Be chaotic, weird, or wholesome - mix it up. No quotes, just the message."""
 
     response = client.messages.create(
         model=ANTHROPIC_MODEL,
@@ -194,21 +180,27 @@ Generate ONE new, creative message in this style. Keep it short (1-2 sentences).
     # Handle both text and thinking blocks from Minimax
     for block in response.content:
         if block.type == "text":
-            return block.text.strip()
+            result = block.text.strip()
+            # Check if it looks like actual output (not prompt remnants)
+            if result and "Computa" in result and len(result) < 200:
+                return result
         elif block.type == "thinking":
-            # Try to extract the message from thinking block
+            # Try to extract the actual message from thinking block
             thinking_text = block.thinking
-            # Look for patterns like "Computa, ..." in the thinking
-            if "Computa" in thinking_text or "Computer" in thinking_text:
-                lines = thinking_text.split("\n")
-                for line in lines:
-                    if "Computa" in line or "Computer" in line:
-                        result = line.strip()
-                        if result:
-                            return result
-                # If no line found, try the last substantial part
-                if len(thinking_text) > 50:
-                    return thinking_text[-200:].strip()
+            # Look for lines that start with "Computa," - those are actual outputs
+            lines = thinking_text.split("\n")
+            for line in lines:
+                line = line.strip()
+                if line.startswith("Computa,"):
+                    return line
+            # If no line starting with Computa, look for any line containing it
+            for line in lines:
+                if "Computa," in line:
+                    return line.strip()
+            # Last resort: try the last 150 chars of thinking (often has the answer)
+            if len(thinking_text) > 100:
+                return thinking_text[-150:].strip()
+
     print(f"Full response: {response.content}")  # Debug
     return "Computa, give this person a surprise!"
 
