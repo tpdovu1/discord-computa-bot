@@ -46,9 +46,11 @@ Generate ONE new, creative, wholesome message in this style. Keep it short (1-2 
 
     # Handle both text and thinking blocks from Minimax
     for block in response.content:
+        print(f"Block type: {block.type}")  # Debug
         if block.type == "text":
             return block.text.strip()
-    return "Computer, give this person a surprise!"
+    print(f"Full response: {response.content}")  # Debug
+    return "Computa, give this person a surprise!"
 
 
 # Allowed channels for computa command
