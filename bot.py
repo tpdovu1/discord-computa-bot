@@ -169,14 +169,15 @@ WHOLESOME:
 
 async def generate_computa_message(user_name: str):
     """Generate a random computa message using Minimax."""
-    prompt = f"""Computa, give {user_name} testicular torsion
-Computa, give {user_name} gay panic with no escape route
-Computa, give {user_name} the best day ever
-Computa, give {user_name} main character energy
-Computa, give {user_name} brain buffer
-Computa, give {user_name} good luck
-
-Now you generate one for {user_name}. Just output the message, nothing else:"""
+    prompt = f"""Generate a Computa command for {user_name}. Examples:
+Q: Computa command for Bob
+A: Computa, give Bob testicular torsion
+Q: Computa command for John
+A: Computa, give John gay panic
+Q: Computa command for Mike
+A: Computa, give Mike the best day ever
+Q: Computa command for {user_name}
+A:"""
 
     print(f"[LLM Prompt] {prompt}")  # Debug
 
