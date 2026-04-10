@@ -181,11 +181,20 @@ Generate ONE new, creative message in this style. Keep it short (1-2 sentences).
         if block.type == "text":
             return block.text.strip()
         elif block.type == "thinking":
+            # Try to extract the message from thinking block
             thinking_text = block.thinking
-            if "ONE" in thinking_text:
-                result = thinking_text.split("ONE", 1)[-1].strip()
-                if result:
-                    return result
+            # Look for patterns like "Computa, ..." in the thinking
+            if "Computa" in thinking_text or "Computer" in thinking_text:
+                lines = thinking_text.split("\n")
+                for line in lines:
+                    if "Computa" in line or "Computer" in line:
+                        result = line.strip()
+                        if result:
+                            return result
+                # If no line found, try the last substantial part
+                if len(thinking_text) > 50:
+                    return thinking_text[-200:].strip()
+    print(f"Full response: {response.content}")  # Debug
     return "Computa, give this person a surprise!"
 
 
