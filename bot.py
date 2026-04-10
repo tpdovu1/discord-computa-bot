@@ -229,6 +229,7 @@ async def computa(interaction: discord.Interaction, user: discord.User):
         )
         return
 
+    # Acknowledge immediately to avoid timeout
     await interaction.response.defer()
 
     try:
@@ -248,7 +249,11 @@ async def computa(interaction: discord.Interaction, user: discord.User):
 
         await interaction.followup.send(embed=embed, view=view)
     except Exception as e:
-        await interaction.followup.send(f"❌ Oops! Something went wrong: {str(e)}")
+        print(f"Error: {e}")  # Debug
+        try:
+            await interaction.followup.send(f"❌ Oops! Something went wrong: {str(e)}")
+        except:
+            pass  # If followup also fails, just ignore
 
 
 @bot.event
