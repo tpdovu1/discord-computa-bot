@@ -169,23 +169,18 @@ WHOLESOME:
 
 async def generate_computa_message(user_name: str):
     """Generate a random computa message using Minimax."""
-    prompt = f"""<system_instruction>You are a creative generator. Output ONLY the message, no explanation.</system_instruction>
+    prompt = f"""Computa, give {user_name} testicular torsion
+Computa, give {user_name} gay panic with no escape route
+Computa, give {user_name} the best day ever
+Computa, give {user_name} main character energy
+Computa, give {user_name} brain buffer
+Computa, give {user_name} good luck
 
-User: Create a funny Computa command for {user_name}
-Output: Computa, give {user_name} testicular torsion
-
-User: Create a funny Computa command for {user_name}
-Output: Computa, give {user_name} gay panic with no escape route
-
-User: Create a funny Computa command for {user_name}
-Output: Computa, give {user_name} the best day ever
-
-User: Create a funny Computa command for {user_name}
-Output:"""
+Now you generate one for {user_name}. Just output the message, nothing else:"""
 
     response = client.messages.create(
         model=ANTHROPIC_MODEL,
-        max_tokens=60,
+        max_tokens=40,
         messages=[{"role": "user", "content": prompt}]
     )
 
