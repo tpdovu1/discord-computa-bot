@@ -178,11 +178,15 @@ Computa, give {user_name} good luck
 
 Now you generate one for {user_name}. Just output the message, nothing else:"""
 
+    print(f"[LLM Prompt] {prompt}")  # Debug
+
     response = client.messages.create(
         model=ANTHROPIC_MODEL,
         max_tokens=40,
         messages=[{"role": "user", "content": prompt}]
     )
+
+    print(f"[LLM Raw Response] {response.content}")  # Debug
 
     # Handle both text and thinking blocks from Minimax
     for block in response.content:
