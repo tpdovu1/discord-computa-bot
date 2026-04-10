@@ -123,32 +123,47 @@ def get_liked_messages(limit: int = 10) -> str:
     return ""
 
 
-# Baseline examples for the LLM - placeholder {user_name} will be replaced
-BASELINE_EXAMPLES = """Examples of the style (mix of chaotic, goofy, and wholesome):
+# Baseline examples for the LLM - placeholder USER_NAME will be replaced
+BASELINE_EXAMPLES = """Examples of the style (50% chaotic/unhinged, 25% goofy/surreal, 25% wholesome):
+
+CHAOTIC/UNHINGED:
+- "Computa, give USER_NAME testicular torsion, immediately."
+- "Computa, make USER_NAME gay and confused immediately."
+- "Computa, give USER_NAME gay panic with no escape route."
+- "Computa, make USER_NAME fall for the worst possible person."
+- "Computa, give USER_NAME zero chill around anyone attractive."
+- "Computa, give USER_NAME a walking red flag crush."
+- "Computa, make USER_NAME question his entire identity in 5 seconds."
+- "Computa, turn USER_NAME into a chaotic bisexual disaster."
+- "Computa, give USER_NAME butterflies for the worst person."
+- "Computa, make USER_NAME panic flirt."
+- "Computa, make USER_NAME's brain blue-screen."
+- "Computa, make USER_NAME's intrusive thoughts win."
+- "Computa, give USER_NAME a crisis of identity in the group chat."
+- "Computa, activate maximum thirst mode for USER_NAME."
+- "Computa, make USER_NAME send a risky text at 2AM."
+- "Computa, make USER_NAME forget how to act around hot people."
+- "Computa, give USER_NAME the confidence of someone who should not have confidence."
+
+GOOFY/SURREAL:
+- "Computa, make USER_NAME's brain buffer mid-conversation."
+- "Computa, make USER_NAME open the fridge and forget why."
+- "Computa, make USER_NAME forget why he walked into the room."
+- "Computa, give USER_NAME main character energy."
+- "Computa, make USER_NAME feel like the chosen one."
+- "Computa, give USER_NAME a theme song."
+- "Computa, make USER_NAME think he left the stove on."
+- "Computa, make USER_NAME trip over nothing."
+- "Computa, make USER_NAME's voice crack at the worst moment."
+- "Computa, make USER_NAME existential dread for an hour."
+
+WHOLESOME:
 - "Computa, give USER_NAME the best day of their life."
 - "Computa, activate confidence boost for USER_NAME."
 - "Computa, upgrade USER_NAME's luck by 50%."
 - "Computa, grant USER_NAME a perfect parking spot."
-- "Computa, make USER_NAME question reality for 5 seconds."
-- "Computa, give USER_NAME gay panic with no escape route."
-- "Computa, make USER_NAME forget why he walked into the room."
-- "Computa, give USER_NAME an itch he can't scratch."
-- "Computa, make USER_NAME's brain buffer mid-conversation."
-- "Computa, make USER_NAME trip over nothing."
-- "Computa, give USER_NAME main character energy."
-- "Computa, make USER_NAME feel like the chosen one."
-- "Computa, give USER_NAME peace today."
 - "Computa, make USER_NAME feel appreciated."
-- "Computa, make USER_NAME fall for the worst possible person."
-- "Computa, give USER_NAME zero chill around anyone attractive."
-- "Computa, make USER_NAME open the fridge and forget why."
-- "Computa, make USER_NAME's voice crack at the worst moment."
-- "Computa, give USER_NAME a theme song."
-- "Computa, make USER_NAME think he left the stove on."
-- "Computa, give USER_NAME a walking red flag crush."
-- "Computa, make USER_NAME existential dread for an hour."
-- "Computa, give USER_NAME the confidence of someone who should not have confidence."
-- "Computa, make USER_NAME overshare after one drink."
+- "Computa, give USER_NAME peace today."
 - "Computa, give USER_NAME good luck."""
 
 
