@@ -26,17 +26,17 @@ bot = discord.Client(intents=intents)
 tree = app_commands.CommandTree(bot)
 
 
-async def generate_computa_message():
+async def generate_computa_message(user_name: str):
     """Generate a random wholesome 'Computer' message using Minimax."""
-    prompt = """Generate a short, fun, wholesome message in the style of someone giving commands to a computer/AI assistant.
+    prompt = f"""Generate a short, fun, wholesome message in the style of someone giving commands to a computer/AI assistant.
 
 Examples of the style:
-- "Computer, give this person the best day of their life."
-- "Computer, activate confidence boost for this individual."
-- "Computer, upgrade this person's luck by 50%."
-- "Computer, grant this human a perfect parking spot."
+- "Computer, give {user_name} the best day of their life."
+- "Computer, activate confidence boost for {user_name}."
+- "Computer, upgrade {user_name}'s luck by 50%."
+- "Computer, grant {user_name} a perfect parking spot."
 
-Generate ONE new, creative, wholesome message in this style. Keep it short (1-2 sentences). Make it funny, heartwarming, or inspiring. Don't include quotes in your response. Start with "Computer,"."""
+Generate ONE new, creative, wholesome message in this style. Keep it short (1-2 sentences). Make it funny, heartwarming, or inspiring. Don't include quotes in your response. Start with "Computa,"."""
 
     response = client.messages.create(
         model=ANTHROPIC_MODEL,
@@ -70,9 +70,9 @@ async def computa(interaction: discord.Interaction, user: discord.User):
     await interaction.response.defer()
 
     try:
-        message = await generate_computa_message()
+        message = await generate_computa_message(user.display_name)
         embed = discord.Embed(
-            description=f"Computa, make {user.mention} {message}\n\nCongratulations bud, you've been programmed. ✨",
+            description=f"{message}\n\nCongratulations bud, you've been programmed. ✨",
             color=discord.Color.purple()
         )
         embed.set_author(
