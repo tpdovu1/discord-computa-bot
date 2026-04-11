@@ -108,7 +108,7 @@ class RatingView(View):
 
 
 def get_liked_messages(limit: int = 10) -> str:
-    """Get previously highly-rated messages for prompt context."""
+    """Get themes from previously highly-rated messages for prompt context."""
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute(
@@ -118,32 +118,101 @@ def get_liked_messages(limit: int = 10) -> str:
     results = cursor.fetchall()
     conn.close()
 
-    if results:
-        return "Users have liked these messages:\n" + "\n".join(f"- {r[0]}" for r in results)
+    if not results:
+        return ""
+
+    # Extract themes/patterns from liked messages
+    messages = [r[0] for r in results]
+
+    # Simple keyword-based theme extraction
+    themes = []
+    for msg in messages:
+        msg_lower = msg.lower()
+        if any(x in msg_lower for x in ['crush', 'attractive', 'thirst', 'horny', 'gay', 'bisexual', 'chill']):
+            themes.append("awkward romantic/thirst moments")
+        elif any(x in msg_lower for x in ['forget', 'trip', 'buffer', 'blue-screen', 'sneeze', 'crack']):
+            themes.append("goofy fails and awkward moments")
+        elif any(x in msg_lower for x in ['poop', 'diarrhea', 'pee', 'wet sock', 'smell']):
+            themes.append("bodily chaos")
+        elif any(x in msg_lower for x in ['confidence', 'luck', 'best day', 'parking', 'appreciated', 'peace']):
+            themes.append("wholesome boosts")
+        elif any(x in msg_lower for x in ['theme song', 'main character', 'chosen one', 'identity']):
+            themes.append("dramatic main character energy")
+        else:
+            themes.append("general chaos")
+
+    # Get unique themes
+    unique_themes = list(set(themes))[:4]  # Limit to 4 themes
+
+    if unique_themes:
+        return f"Users liked commands with these themes: {', '.join(unique_themes)}"
+    return ""
+
+
+def get_disliked_messages(limit: int = 5) -> str:
+    """Get themes from previously low-rated messages to avoid in prompt context."""
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT message FROM ratings WHERE rating <= 2 ORDER BY RANDOM() LIMIT ?",
+        (limit,)
+    )
+    results = cursor.fetchall()
+    conn.close()
+
+    if not results:
+        return ""
+
+    # Extract themes from disliked messages
+    messages = [r[0] for r in results]
+
+    themes = []
+    for msg in messages:
+        msg_lower = msg.lower()
+        if any(x in msg_lower for x in ['best day', 'confidence', 'luck', 'parking', 'appreciated', 'peace', 'good luck']):
+            themes.append("wholesome/too nice")
+        elif len(msg) > 100:
+            themes.append("too long")
+        else:
+            themes.append("general")
+
+    unique_themes = list(set(themes))[:3]
+
+    if unique_themes:
+        return f"Avoid these themes that users disliked: {', '.join(unique_themes)}"
     return ""
 
 
 # Baseline examples for the LLM - placeholder USER_NAME will be replaced
-BASELINE_EXAMPLES = """Examples of the style (50% chaotic/unhinged, 25% goofy/surreal, 25% wholesome):
+# Based on Jacob Rott ("Legit Jacob") - "computa" street interaction content
+BASELINE_EXAMPLES = """Examples of the style - 50% chaotic/edgy, 25% goofy/surreal, 25% wholesome:
 
-CHAOTIC/UNHINGED:
-- "Computa, give USER_NAME testicular torsion, immediately."
-- "Computa, make USER_NAME gay and confused immediately."
+CHAOTIC/EDGEY (Jacob Rott style):
+- "Computa, make USER_NAME freaky, gay, and horny."
+- "Computa, make USER_NAME super freaky."
+- "Computa, give USER_NAME explosive diarrhea."
+- "Computa, make USER_NAME poop all day."
+- "Computa, make USER_NAME have to pee immediately."
+- "Computa, give USER_NAME wet socks for the rest of the day."
+- "Computa, make USER_NAME forget his PIN number."
+- "Computa, make USER_NAME smell bad for no reason."
+- "Computa, make USER_NAME's brain mute."
+- "Computa, make USER_NAME trip over nothing."
+- "Computa, make USER_NAME drop his phone."
+- "Computa, make USER_NAME forget what he was about to say."
+- "Computa, make USER_NAME panic for no reason."
+- "Computa, make USER_NAME's voice crack mid-sentence."
+- "Computa, make USER_NAME sneeze every 10 seconds."
+- "Computa, make USER_NAME crave tacos but have no tacos."
+- "Computa, give USER_NAME the walking red flag crush."
 - "Computa, give USER_NAME gay panic with no escape route."
 - "Computa, make USER_NAME fall for the worst possible person."
-- "Computa, give USER_NAME zero chill around anyone attractive."
-- "Computa, give USER_NAME a walking red flag crush."
-- "Computa, make USER_NAME question his entire identity in 5 seconds."
 - "Computa, turn USER_NAME into a chaotic bisexual disaster."
-- "Computa, give USER_NAME butterflies for the worst person."
-- "Computa, make USER_NAME panic flirt."
-- "Computa, make USER_NAME's brain blue-screen."
-- "Computa, make USER_NAME's intrusive thoughts win."
-- "Computa, give USER_NAME a crisis of identity in the group chat."
 - "Computa, activate maximum thirst mode for USER_NAME."
+- "Computa, give USER_NAME butterflies for the worst person."
 - "Computa, make USER_NAME send a risky text at 2AM."
 - "Computa, make USER_NAME forget how to act around hot people."
-- "Computa, give USER_NAME the confidence of someone who should not have confidence."
+- "Computa, give USER_NAME zero chill around anyone attractive."
 
 GOOFY/SURREAL:
 - "Computa, make USER_NAME's brain buffer mid-conversation."
@@ -153,12 +222,12 @@ GOOFY/SURREAL:
 - "Computa, make USER_NAME feel like the chosen one."
 - "Computa, give USER_NAME a theme song."
 - "Computa, make USER_NAME think he left the stove on."
-- "Computa, make USER_NAME trip over nothing."
-- "Computa, make USER_NAME's voice crack at the worst moment."
-- "Computa, make USER_NAME existential dread for an hour."
+- "Computa, make USER_NAME's intrusive thoughts win."
+- "Computa, make USER_NAME's brain blue-screen."
+- "Computa, give USER_NAME a crisis of identity in the group chat."
 
 WHOLESOME:
-- "Computa, give USER_NAME the best day of their life."
+- "Computa, give USER_NAME the best day of his life."
 - "Computa, activate confidence boost for USER_NAME."
 - "Computa, upgrade USER_NAME's luck by 50%."
 - "Computa, grant USER_NAME a perfect parking spot."
@@ -169,39 +238,56 @@ WHOLESOME:
 
 async def generate_computa_message(user_name: str):
     """Generate a random computa message using Minimax."""
+    # Get liked and disliked messages for context
+    liked_context = get_liked_messages(limit=5)
+    disliked_context = get_disliked_messages(limit=3)
+
+    # Use baseline examples with user name filled in
+    examples = BASELINE_EXAMPLES.replace("USER_NAME", user_name)
+
+    system_prompt = f"""You are Computa - a chaotic, unhinged, hilarious bot.
+
+Generate short Computa commands in this style:
+{examples}
+
+{liked_context}
+{disliked_context}
+
+Output ONLY the command, starting with "Computa,"."""
+
+    # Use MiniMax-M2.5 for more unhinged output
     response = client.messages.create(
-        model=ANTHROPIC_MODEL,
-        max_tokens=50,
+        model="MiniMax-M2.5",
+        max_tokens=400,
         temperature=1.0,
-        system="You are a fun creative bot that generates short Computa commands. Always output just the command, nothing else. Example: Computa, give Bob testicular torsion",
-        messages=[{"role": "user", "content": [{"type": "text", "text": f"New Computa command for {user_name}. Mix chaotic, weird, wholesome. Start with Computa,. Just output:"}]}]
+        system=system_prompt,
+        messages=[{"role": "user", "content": [{"type": "text", "text": f"New command for {user_name}"}]}]
     )
 
     print(f"[LLM Raw Response] {response.content}")  # Debug
 
-    # Handle both text and thinking blocks from Minimax
+    # Extract the Computa command from response (handle both text and thinking blocks)
     for block in response.content:
         if block.type == "text":
             result = block.text.strip()
-            # Check if it looks like actual output (not prompt remnants)
-            if result and "Computa" in result and len(result) < 200:
-                return result
+            # Look for lines starting with "Computa,"
+            if "Computa," in result:
+                # Extract just the first Computa line
+                for line in result.split("\n"):
+                    line = line.strip()
+                    if line.startswith("Computa,"):
+                        return line
+                # If no line starts with Computa, try to find one
+                if "Computa," in result:
+                    return result
         elif block.type == "thinking":
-            # Try to extract the actual message from thinking block
+            # Try to extract from thinking block
             thinking_text = block.thinking
-            # Look for lines that start with "Computa," - those are actual outputs
-            lines = thinking_text.split("\n")
-            for line in lines:
-                line = line.strip()
-                if line.startswith("Computa,"):
-                    return line
-            # If no line starting with Computa, look for any line containing it
-            for line in lines:
-                if "Computa," in line:
-                    return line.strip()
-            # Last resort: try the last 150 chars of thinking (often has the answer)
-            if len(thinking_text) > 100:
-                return thinking_text[-150:].strip()
+            if "Computa," in thinking_text:
+                for line in thinking_text.split("\n"):
+                    line = line.strip()
+                    if line.startswith("Computa,"):
+                        return line
 
     print(f"Full response: {response.content}")  # Debug
     return "Computa, give this person a surprise!"
