@@ -290,7 +290,7 @@ Output ONLY the command, starting with "Computa,"."""
                         return line
 
     print(f"Full response: {response.content}")  # Debug
-    return "Computa, give this person a surprise!"
+    return f"Computa, give {user_name} a chaotic sandwich!"
 
 
 # Allowed channel for computa command
@@ -299,8 +299,13 @@ ALLOWED_CHANNEL_ID = 1492242807258222664
 
 @tree.command(name="computa", description="Give someone a computa-guysque boost!")
 @app_commands.checks.has_permissions(send_messages=True)
-async def computa(interaction: discord.Interaction, user: discord.User):
-    """Slash command to generate a computa message with rating buttons."""
+async def computa(interaction: discord.Interaction, user: discord.User, message: str = None):
+    """Slash command to generate a computa message with rating buttons.
+
+    Args:
+        user: The user to computa
+        message: Optional custom computa command (e.g., "make Jordan trip over nothing")
+    """
     # Check if command is used in allowed channel
     if interaction.channel_id != ALLOWED_CHANNEL_ID:
         await interaction.response.send_message(
@@ -313,10 +318,18 @@ async def computa(interaction: discord.Interaction, user: discord.User):
     await interaction.response.defer()
 
     try:
-        message = await generate_computa_message(user.display_name)
+        # Use custom message if provided, otherwise generate one
+        if message:
+            # Ensure it starts with "Computa,"
+            if not message.lower().startswith("computa,"):
+                computa_message = f"Computa, {message}"
+            else:
+                computa_message = message
+        else:
+            computa_message = await generate_computa_message(user.display_name)
 
         embed = discord.Embed(
-            description=f"{message}\n\nCongratulations bud, you've been programmed. ✨",
+            description=f"{computa_message}\n\nCongratulations bud, you've been programmed. ✨",
             color=discord.Color.purple()
         )
         embed.set_author(
@@ -325,7 +338,7 @@ async def computa(interaction: discord.Interaction, user: discord.User):
         )
 
         # Add rating buttons (only target user can vote)
-        view = RatingView(target_user_id=user.id, message_text=message)
+        view = RatingView(target_user_id=user.id, message_text=computa_message)
 
         await interaction.followup.send(embed=embed, view=view)
     except Exception as e:
